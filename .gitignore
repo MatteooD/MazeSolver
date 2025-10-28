@@ -1,0 +1,23 @@
+# Cartella di build
+/build/
+
+# File compilati (Linux/Mac)
+*.out
+*.o
+*.so
+
+# File compilati (Windows)
+*.exe
+*.obj
+*.dll
+
+# File temporanei di editor
+*.swp
+*~
+.vscode/
+.idea/
+
+# File di sistema
+.DS_Store
+Thumbs.db
+
