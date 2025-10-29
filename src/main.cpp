@@ -103,6 +103,28 @@ pair<int, int> generaCoordinateArrivo(int rigaDiPartenza, int colonnaDiPartenza,
     return {rigaDiArrivo, colonnaDiArrivo}; 
 }
 
+void generaBordi(vector<vector<char>> &labirinto, int row, int col){
+    for(int i = 0; i < row; i++){
+        if (labirinto[0][i] != 'A' && labirinto[0][i] != 'B')
+            labirinto[0][i] = '#';
+    }
+    for (int i = 0; i < col; i++)
+    {
+        if (labirinto[19][i] != 'A' && labirinto[19][i] != 'B')
+        labirinto[19][i] = '#'; 
+    }
+    for (int i = 0; i < row; i++)
+    {
+        if (labirinto[i][0] != 'A' && labirinto[i][0] != 'B')
+        labirinto[i][0] = '#'; 
+    }
+    for (int i = 0; i < col; i++)
+    {
+        if (labirinto[i][19] != 'A' && labirinto[i][19] != 'B')
+        labirinto[i][19] = '#'; 
+    }
+}
+
 
 
 int main(){
@@ -145,7 +167,7 @@ int main(){
     //salva in due variabili le coordinate della cella attuale
     auto [a, b] = percorso.top();
         
-    // assicura che il percorso non si crei nei bordi del labirinto
+    // sposto la cella attuale un passo più interno
     if(a == 0) a++;
     if(a == 19) a--;
     if(b == 0) b++;
@@ -153,7 +175,18 @@ int main(){
 
     labirinto[a][b] = '.';
     percorso.push({a, b});
-    
+
+    int c,d;
+    c = arrivo.first;
+    d = arrivo.second;
+
+    if(c == 0) c++;
+    if(c == 19) c--;
+    if(d == 0) d++;
+    if(d == 19) d--;
+
+    labirinto[c][d] = '.';  
+
 
     // Algoritmo DFS per creare un percorso
     while (!percorso.empty())
@@ -198,6 +231,10 @@ int main(){
     }
 
     cout << "Labirinto con percorso: " << endl;
+    stampaVettoreAnnidato(labirinto, ROW, COL);
+
+    cout << "Labirinto con percorso e bordi: " << endl;
+    generaBordi(labirinto, ROW, COL);
     stampaVettoreAnnidato(labirinto, ROW, COL);
 
 
