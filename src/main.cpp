@@ -2,53 +2,49 @@
 #include <queue>
 #include <vector>
 #include <stack>
-#include <deque>
 #include <ctime>
 #include <cstdlib>
 #include <unistd.h>
-#include <utility>
-
+#include <climits>
 using namespace std;
 
 /*                   1 1 1 1 1 1 1 1 1 2
    1 2 3 4 5 6 7 8 9 1 2 3 4 5 6 7 8 9 0
-1  # # # # # # # # # # # # # # # # # # #
-2  # # # # # # # # # # # # # # # # # # #
-3  # # # # # # # # # # # # # # # # # # #
-4  # # # # # # # # # # # # # # # # # # #
-5  # # # # # # # # # # # # # # # # # # #
-6  # # # # # # # # # # # # # # # # # # #
-7  # # # # # # # # # # # # # # # # # # #
-8  # # # # # # # # # # # # # # # # # # #
-9  # # # # # # # # # # # # # # # # # # #
-10 # # # # # # # # # # # # # # # # # # #
-11 # # # # # # # # # # # # # # # # # # #
-12 # # # # # # # # # # # # # # # # # # #
-13 # # # # # # # # # # # # # # # # # # #
-14 # # # # # # # # # # # # # # # # # # #
-15 # # # # # # # # # # # # # # # # # # #
-16 # # # # # # # # # # # # # # # # # # #
-17 # # # # # # # # # # # # # # # # # # #
-18 # # # # # # # # # # # # # # # # # # #
-19 # # # # # # # # # # # # # # # # # # #
-20 # # # # # # # # # # # # # # # # # # #
+1  # # # # # # # # # # # # # # # # # # #
+2  # # # # # # # # # # # # # # # # # # #
+3  # # # # # # # # # # # # # # # # # # #
+4  # # # # # # # # # # # # # # # # # # #
+5  # # # # # # # # # # # # # # # # # # #
+6  # # # # # # # # # # # # # # # # # # #
+7  # # # # # # # # # # # # # # # # # # #
+8  # # # # # # # # # # # # # # # # # # #
+9  # # # # # # # # # # # # # # # # # # #
+10 # # # # # # # # # # # # # # # # # # #
+11 # # # # # # # # # # # # # # # # # # #
+12 # # # # # # # # # # # # # # # # # # #
+13 # # # # # # # # # # # # # # # # # # #
+14 # # # # # # # # # # # # # # # # # # #
+15 # # # # # # # # # # # # # # # # # # #
+16 # # # # # # # # # # # # # # # # # # #
+17 # # # # # # # # # # # # # # # # # # #
+18 # # # # # # # # # # # # # # # # # # #
+19 # # # # # # # # # # # # # # # # # # #
+20 # # # # # # # # # # # # # # # # # # #
 */
 
 const int ROW = 20;
 const int COL = 20;
 
-enum direzioneDIPartenza
-{
-    alto,
-    destra,
-    basso,
-    sinistra
-};
+const int DR[4] = {-1, 0, 1, 0};  // spostamento sulla riga - cambierà riga di una cella
+const int DC[4] = {0, 1, 0, -1};  // spostamento sulla colonna - cabierà colonna di una cella
+const int DR2[4] = {-2, 0, 2, 0}; // spostamento sulla colonna - cambierà riga di due celle
+const int DC2[4] = {0, 2, 0, -2}; // spostamento sulla riga - cabierà colonna di due celle
+
+enum DirezioneDiPartenza { alto, destra, basso, sinistra };
 
 int generaIndiceRandom(int range)
 {
-    int x = rand() % range;
-    return x;
+    return rand() % range;
 }
 
 void stampaVettoreAnnidato(vector<vector<char>> &labirinto, int row, int col)
@@ -68,26 +64,11 @@ pair<int, int> generaCoordinatePartenza(int x, int y)
     int rigaDiPartenza;
     int colonnaDiPartenza;
 
-    if (x == alto)
-    {
-        rigaDiPartenza = 0;
-        colonnaDiPartenza = y;
-    }
-    else if (x == destra)
-    {
-        colonnaDiPartenza = 19;
-        rigaDiPartenza = y;
-    }
-    else if (x == basso)
-    {
-        rigaDiPartenza = 19;
-        colonnaDiPartenza = y;
-    }
-    else
-    {
-        colonnaDiPartenza = 0;
-        rigaDiPartenza = y;
-    }
+    if (x == alto) { rigaDiPartenza = 0; colonnaDiPartenza = y; }
+    else if (x == destra) { colonnaDiPartenza = COL - 1; rigaDiPartenza = y; }
+    else if (x == basso) { rigaDiPartenza = ROW - 1; colonnaDiPartenza = y; }
+    else { colonnaDiPartenza = 0; rigaDiPartenza = y; }
+
     return {rigaDiPartenza, colonnaDiPartenza};
 }
 
@@ -95,26 +76,12 @@ pair<int, int> generaCoordinateArrivo(int rigaDiPartenza, int colonnaDiPartenza,
 {
     int rigaDiArrivo;
     int colonnaDiArrivo;
-    if (rigaDiPartenza == 0)
-    {
-        rigaDiArrivo = 19;
-        colonnaDiArrivo = numeroRandom;
-    }
-    else if (rigaDiPartenza == 19)
-    {
-        rigaDiArrivo = 0;
-        colonnaDiArrivo = numeroRandom;
-    }
-    else if (colonnaDiPartenza == 0)
-    {
-        colonnaDiArrivo = 19;
-        rigaDiArrivo = numeroRandom;
-    }
-    else
-    {
-        colonnaDiArrivo = 0;
-        rigaDiArrivo = numeroRandom;
-    }
+
+    if (rigaDiPartenza == 0){ rigaDiArrivo = ROW - 1; colonnaDiArrivo = numeroRandom; }
+    else if (rigaDiPartenza == ROW - 1) { rigaDiArrivo = 0; colonnaDiArrivo = numeroRandom; }
+    else if (colonnaDiPartenza == 0) { colonnaDiArrivo = COL - 1; rigaDiArrivo = numeroRandom; }
+    else { colonnaDiArrivo = 0; rigaDiArrivo = numeroRandom; }
+
     return {rigaDiArrivo, colonnaDiArrivo};
 }
 
@@ -122,101 +89,62 @@ void generaBordi(vector<vector<char>> &labirinto, int row, int col)
 {
     for (int i = 0; i < row; i++)
     {
-        if (labirinto[0][i] != 'A' && labirinto[0][i] != 'B')
-            labirinto[0][i] = '#';
+        if (labirinto[0][i] != 'A' && labirinto[0][i] != 'B') labirinto[0][i] = '#';
+        if (labirinto[i][0] != 'A' && labirinto[i][0] != 'B') labirinto[i][0] = '#';
     }
     for (int i = 0; i < col; i++)
     {
-        if (labirinto[19][i] != 'A' && labirinto[19][i] != 'B')
-            labirinto[19][i] = '#';
-    }
-    for (int i = 0; i < row; i++)
-    {
-        if (labirinto[i][0] != 'A' && labirinto[i][0] != 'B')
-            labirinto[i][0] = '#';
-    }
-    for (int i = 0; i < col; i++)
-    {
-        if (labirinto[i][19] != 'A' && labirinto[i][19] != 'B')
-            labirinto[i][19] = '#';
+        if (labirinto[ROW - 1][i] != 'A' && labirinto[ROW - 1][i] != 'B') labirinto[ROW - 1][i] = '#';
+        if (labirinto[i][COL - 1] != 'A' && labirinto[i][COL - 1] != 'B') labirinto[i][COL - 1] = '#';
     }
 }
 
-pair<int,int> spostaInternoA(pair<int,int> cella){
-    
+pair<int, int> spostaInternoA(pair<int, int> cella)
+{
     auto [a, b] = cella;
 
-    // sposto la cella attuale un passo più interno
-    if (a == 0)
-        a++;
-    if (a == 19)
-        a--;
-    if (b == 0)
-        b++;
-    if (b == 19)
-        b--;
+    if (a == 0) a++;
+    if (a == ROW - 1) a--;
+    if (b == 0) b++;
+    if (b == COL - 1) b--;
 
-    return{a,b};
+    return {a, b};
 }
 
-pair<int,int> spostaInternoB(pair<int, int> arrivo){
-    int e, d;
-    e = arrivo.first;
-    d = arrivo.second;
-
-    if (e == 0)
-        e++;
-    if (e == 19)
-        e--;
-    if (d == 0)
-        d++;
-    if (d == 19)
-        d--;
-
-    return{e,d};
-}
-
-
-void generaLabirinto(stack<pair<int, int>> &percorso, int dr[], int dc[], int drr[], int dcc[], vector<vector<char>> &labirinto)
+pair<int, int> spostaInternoB(pair<int, int> cella)
 {
-    // Algoritmo DFS per creare un percorso
+    auto [a, b] = cella;
+
+    if (a == 0) a++;
+    if (a == ROW - 1) a--;
+    if (b == 0) b++;
+    if (b == COL - 1) b--;
+
+    return {a, b};
+}
+
+void generaLabirinto(stack<pair<int, int>> &percorso, vector<vector<char>> &labirinto)
+{
     while (!percorso.empty())
     {
-        // salva in due variabili le coordinate della cella attuale
         auto [r, c] = percorso.top();
-
         vector<int> direzioniPossibili;
 
-        // ciclo per controllare tutte le direzioni possibili
         for (int i = 0; i < 4; i++)
         {
-            // celle accanto alla cella attuale
-            int nr = r + dr[i];
-            int nc = c + dc[i];
+            int nr = r + DR[i], nc = c + DC[i];
+            int nrr = r + DR2[i], ncc = c + DC2[i];
 
-            // due celle accanto alla cella attuale
-            int nrr = r + drr[i];
-            int ncc = c + dcc[i];
-
-            // controlla che la cella accanto e due celle accanto alla cella attuale siano dei muri e che non escano dal bordo
-            if (nr >= 0 && nr < ROW && nc >= 0 && nc < COL && nrr >= 0 && nrr < ROW && ncc >= 0 && ncc < COL && labirinto[nr][nc] == '#' && labirinto[nrr][ncc] == '#')
-            {
+            if (nrr >= 0 && nrr < ROW && ncc >= 0 && ncc < COL && labirinto[nr][nc] == '#' && labirinto[nrr][ncc] == '#')
                 direzioniPossibili.push_back(i);
-            }
         }
 
-        if (direzioniPossibili.empty())
-            percorso.pop();
+        if (direzioniPossibili.empty()) percorso.pop();
         else
         {
-            int k = rand() % direzioniPossibili.size();
-            int dir = direzioniPossibili[k];
-
-            int nr = r + dr[dir];
-            int nc = c + dc[dir];
-
-            int nrr = r + drr[dir];
-            int ncc = c + dcc[dir];
+            int dir = direzioniPossibili[rand() % direzioniPossibili.size()];
+            int nr = r + DR[dir], nc = c + DC[dir];
+            int nrr = r + DR2[dir], ncc = c + DC2[dir];
 
             labirinto[nr][nc] = '.';
             labirinto[nrr][ncc] = '.';
@@ -225,62 +153,108 @@ void generaLabirinto(stack<pair<int, int>> &percorso, int dr[], int dc[], int dr
     }
 }
 
-bool bfsVerifica(queue<pair<int, int>> &bfs, vector<vector<bool>> &visitato, vector<vector<char>> &labirinto, int dr[], int dc[], pair<int, int> partenza, pair<int, int> &arrivo)
+bool bfsVerifica(queue<pair<int, int>> &bfs, vector<vector<bool>> &visitato, vector<vector<char>> &labirinto, pair<int, int> arrivo)
 {
-    bool trovatoB = false;
     while (!bfs.empty())
     {
-        auto [f, g] = bfs.front();
+        auto [r, c] = bfs.front();
         bfs.pop();
 
-        if (f == arrivo.first && g == arrivo.second)
-        {
-            cout << "Ho trovato B!\n";
-            trovatoB = true;
-            break;
-        }
+        if (r == arrivo.first && c == arrivo.second) return true;
 
-        // esploro i vicini
         for (int i = 0; i < 4; i++)
         {
-            // celle accanto alla cella attuale
-            int nr = f + dr[i];
-            int nc = g + dc[i];
+            int nr = r + DR[i], nc = c + DC[i];
 
-            // controlla che la cella accanto e due celle accanto alla cella attuale siano dei muri e che non escano dal bordo
-            if (nr >= 0 && nr < ROW && nc >= 0 && nc < COL && !visitato[nr][nc] && labirinto[nr][nc] != '#')
+
+            if (nr >= 0 && nr < ROW && nc >= 0 && nc < COL && labirinto[nr][nc] != '#' && !visitato[nr][nc])
             {
-                bfs.push({nr, nc});
                 visitato[nr][nc] = true;
+                bfs.push({nr, nc});
             }
         }
     }
-    if (trovatoB == true)
-        return true;
-    else
-        return false;
+    return false;
 }
 
-void inizializaTutto(vector<vector<char>> &labirinto, stack<pair<int, int>> &percorso, queue<pair<int, int>> &bfs, vector<vector<bool>> &visitato, pair<int,int> &partenza, pair<int,int> &arrivo)
+pair<int, int> trovaCellaVicinoAB(queue<pair<int, int>> bfs, vector<vector<bool>> visitato, vector<vector<char>> &labirinto, pair<int, int> Bin)
+{
+    pair<int, int> cellaPiuVicina = {-1, -1};
+    int distanzaMinima = INT_MAX;
+
+    while (!bfs.empty())
+    {
+        auto [r, c] = bfs.front();
+        bfs.pop();
+
+        int dist = abs(r - Bin.first) + abs(c - Bin.second);
+        if(dist < distanzaMinima){
+            distanzaMinima = dist;
+            cellaPiuVicina = {r, c};
+        }
+
+        for(int i = 0; i < 4; i++){
+            int nr = r + DR[i], nc = c + DC[i];
+            
+            if(nr >= 0 && nr < ROW && nc >= 0 && nc < COL && labirinto[nr][nc] != '#' && !visitato[nr][nc]){
+                visitato[nr][nc] = true;
+                bfs.push({nr, nc});
+            }
+        }
+    }
+    return cellaPiuVicina;
+}
+
+void forzaPercorso(pair<int,int> A, pair<int,int> B, vector<vector<char>> &labirinto){
+   
+    auto r = A.first, c = A.second;
+    labirinto[r][c] = '.';
+
+    while (r != B.first || c !=B.second)
+    {
+        if(r < B.first) r++;
+        else if(r > B.first) r--;
+
+        if (c < B.second) c++;
+        else if (c > B.second) c--;
+        
+        labirinto[r][c] = '.';
+    }
+    
+   }
+
+void inizializzaTutto(vector<vector<char>> &labirinto, stack<pair<int, int>> &percorso, queue<pair<int, int>> &bfs, vector<vector<bool>> &visitato, pair<int, int> &partenza, pair<int, int> &arrivo, pair<int,int> &Ain, pair<int,int> &Bin)
 {
     for (int righe = 0; righe < ROW; righe++)
     {
-       for (int colonne = 0; colonne < COL; colonne++)
-       {
-        labirinto[righe][colonne] = '#';
-        visitato[righe][colonne] = false;
-       }
+        for (int colonne = 0; colonne < COL; colonne++)
+        {
+            labirinto[righe][colonne] = '#';
+            visitato[righe][colonne] = false;
+        }
     }
 
     while (!percorso.empty()) percorso.pop();
     while (!bfs.empty()) bfs.pop();
-    generaCoordinatePartenza();
-    generaCoordinateArrvo();
-    spostaInternoA();
-    spostaInternoB();
+    
+    int x = generaIndiceRandom(4);
+    int y = generaIndiceRandom(ROW);
+    int z = generaIndiceRandom(COL);
+
+    partenza = generaCoordinatePartenza(x, y);
+    arrivo = generaCoordinateArrivo(partenza.first, partenza.second, z);
+
     labirinto[partenza.first][partenza.second] = 'A';
-    labirinto[arrivo.first][arrivo.second] = 'B';
-    percorso.push({a, b});
+
+    Ain = spostaInternoA(partenza);
+    Bin = spostaInternoB(arrivo);
+
+    labirinto[Ain.first][Ain.second] = '.';
+
+
+    percorso.push(Ain);
+    bfs.push(Ain);
+    visitato[Ain.first][Ain.second] = true;
 }
 
 int main()
@@ -292,64 +266,57 @@ int main()
     queue<pair<int, int>> bfs;
     vector<vector<bool>> visitato(ROW, vector<bool>(COL, false));
 
-    int dr[4] = {-1, 0, 1, 0}; // spostamento sulla riga - cambierà riga di una cella
-    int dc[4] = {0, 1, 0, -1}; // spostamento sulla colonna - cabierà colonna di una cella
+    pair<int,int> partenza, arrivo, Ain, Bin;
+    bool collegato = false;
 
-    int drr[4] = {-2, 0, 2, 0}; // spostamento sulla colonna - cambierà riga di due celle
-    int dcc[4] = {0, 2, 0, -2}; // spostamento sulla riga - cabierà colonna di due celle
+    do {
+        inizializzaTutto(labirinto, percorso, bfs, visitato, partenza, arrivo, Ain, Bin);
+        generaLabirinto(percorso, labirinto);
 
-    cout << "Labirinto iniziale: " << endl;
-    stampaVettoreAnnidato(labirinto, ROW, COL);
-
-    // sceglie se partire dalla riga in: alto == 0, destra == 1, basso == 2, sinistra == 3;
-    // ho separato le due coordinate per poter limitare la prima ai bordi
-    int x = generaIndiceRandom(4);
-    // sceglie la seconda coordinata per genersare due coordinate random
-    int y = generaIndiceRandom(20);
-    int z = generaIndiceRandom(20);
-
-    pair<int, int> partenza = generaCoordinatePartenza(x, y);
-
-    labirinto[partenza.first][partenza.second] = 'A';
-    percorso.push(partenza);
-
-    cout << "Labirinto con il punto di partenza: " << endl;
-    stampaVettoreAnnidato(labirinto, ROW, COL);
-
-    pair<int, int> arrivo = generaCoordinateArrivo(partenza.first, partenza.second, z);
-
-    labirinto[arrivo.first][arrivo.second] = 'B';
-
-    cout << "Labirinto con il punto di partenza e punto di arrivo: " << endl;
-    stampaVettoreAnnidato(labirinto, ROW, COL);
-
-   
-    spostaInterno(partenza);
-    // salva in due variabili le coordinate della cella attuale
+        // Resetto la BFS prima di ogni verifica
+        while (!bfs.empty()) bfs.pop();
+        bfs.push(Ain);
     
-    auto [a,b] = spostaInternoA(partenza);
-    labirinto[a][b] = '.';
-    percorso.push({a, b});
+        for (int i = 0; i < ROW; i++)
+            for (int j = 0; j < COL; j++)
+                visitato[i][j] = false;
 
-    auto [e, d] = spostaInternoB(arrivo);
-    labirinto[e][d] = '.';
-    bfs.push(partenza);
+        visitato[Ain.first][Ain.second] = true;
+    
+        collegato = true;  // non serve più verificare con BFS
 
-    visitato[partenza.first][partenza.second] = true;
-    generaLabirinto(percorso, dr, dc, drr, dcc, labirinto);
+cout << "\nLabirinto generato, forzo il percorso...\n";
 
-    while (!bfsVerifica(bfs, visitato, labirinto, dr, dc, partenza, arrivo)){
-        generaLabirinto(percorso, dr, dc, drr, dcc, labirinto);
+// Trova un punto aperto per B (qualsiasi)
+pair<int, int> puntoB = Ain;
+int maxDistanza = 0;
+
+for (int r = 0; r < ROW; r++) {
+    for (int c = 0; c < COL; c++) {
+        if (labirinto[r][c] == '.') {
+            int distanza = abs(Ain.first - r) + abs(Ain.second - c);
+            if (distanza > maxDistanza) {
+                maxDistanza = distanza;
+                puntoB = {r, c};
+            }
+        }
     }
+}
 
-    // Algoritmo BFS per controllare che B sia raggiungibile
+// Scava un percorso diretto da A a B
+forzaPercorso(Ain, puntoB, labirinto);
 
-    cout << "Labirinto con percorso: " << endl;
-    stampaVettoreAnnidato(labirinto, ROW, COL);
+// Posiziona simboli finali
+labirinto[partenza.first][partenza.second] = 'A';
+labirinto[puntoB.first][puntoB.second] = 'B';
+    
+    } while (!collegato);
+    
 
-    cout << "Labirinto con percorso e bordi: " << endl;
     generaBordi(labirinto, ROW, COL);
+
     stampaVettoreAnnidato(labirinto, ROW, COL);
+
 
     return 0;
 }
